@@ -1,0 +1,22 @@
+{
+  "name": "@muster/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "muster-api": "dist/bin/muster-api.js",
+    "muster-admin": "dist/bin/muster-admin.js",
+    "muster-presence": "dist/bin/muster-presence.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "pg": "^8.13.0",
+    "yaml": "^2.8.3"
+  }
+}

@@ -1,0 +1,33 @@
+[Unit]
+Description=Muster API - agent coordination registry and identity (OB-60176)
+After=network-online.target postgresql.service tailscaled.service
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=12
+
+[Service]
+Type=simple
+User=niclydon
+Group=niclydon
+WorkingDirectory=/services/muster
+EnvironmentFile=/etc/homelab/secrets/muster.env
+Environment=NODE_ENV=production
+Environment=MUSTER_AUDIENCE=muster:furnace
+# Public edition: loopback shown; production binds a private network address.
+Environment=MUSTER_HOST=127.0.0.1
+Environment=MUSTER_PORT=7880
+Environment=MUSTER_ROLES_FILE=/services/nexus/muster/roles.yaml
+Environment=MUSTER_BINDING_MODULE=/services/nexus/muster/nexus-binding.mjs
+Environment=LOG_LEVEL=normal
+ExecStart=/usr/bin/node packages/core/dist/bin/muster-api.js
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=muster-api
+
+[Install]
+WantedBy=multi-user.target

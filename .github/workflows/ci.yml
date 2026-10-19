@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: muster_test
+          POSTGRES_PASSWORD: muster_test
+          POSTGRES_DB: muster_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U muster_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MUSTER_TEST_DATABASE_URL: postgres://muster_test:muster_test@localhost:5432/muster_test
+      MUSTER_REQUIRE_DB_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Provision the muster_api test role (the suite never creates cluster roles)
+        run: psql "$MUSTER_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE ROLE muster_api LOGIN PASSWORD 'muster_api'"
+      - name: Provision the muster_admin test role (the suite never creates cluster roles)
+        run: psql "$MUSTER_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE ROLE muster_admin LOGIN PASSWORD 'muster_admin'"
+      - run: npm run check:boundary
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test

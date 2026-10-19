@@ -1,0 +1,27 @@
+[Unit]
+Description=Muster presence - first-hand registration and heartbeat for persistent Nexus agent seats
+After=network-online.target muster-api.service
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=12
+
+[Service]
+Type=simple
+User=niclydon
+Group=niclydon
+WorkingDirectory=/services/muster
+EnvironmentFile=/etc/homelab/secrets/muster-presence.env
+Environment=NODE_ENV=production
+Environment=LOG_LEVEL=normal
+ExecStart=/usr/bin/node packages/core/dist/bin/muster-presence.js
+Restart=on-failure
+RestartSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=muster-presence
+
+[Install]
+WantedBy=multi-user.target
